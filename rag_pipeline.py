@@ -3,12 +3,14 @@ from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, Filter, FieldCondition, Match
 import json
+import os
 
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
 QDRANT_URL = "http://localhost:6333"
 COLLECTION_NAME = "allure_chunks"
-OLLAMA_URL = "http://localhost:11434/api/generate"
+# URL for the Ollama API can be overridden by environment variable
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = "qwen3:0.6b"
 
 
@@ -29,12 +31,12 @@ def search_similar_chunks(query: str, top_k: int = 5):
 
 
 # ==== Генерация ответа через Ollama ====
-def generate_answer_with_ollama(chunks, question):
+def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
     context = "\n\n".join(chunks)
     prompt = f"Вот информация из отчёта:\n{context}\n\nВопрос: {question}\nОтвет:"
     
     response = requests.post(
-        "http://localhost:11434/api/generate",
+        ollama_url,
         json={
             "model": OLLAMA_MODEL,   # или другая твоя модель
             "prompt": prompt,
