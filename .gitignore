@@ -1,0 +1,6 @@
+local_models/
+venv/
+reports/
+
+embeddings.npy
+output_chunks.jsonl
