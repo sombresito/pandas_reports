@@ -1,7 +1,7 @@
 import requests
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import Distance
+from qdrant_client.http.models import Distance, Filter, FieldCondition, Match
 import json
 
 # ==== Настройки ====
@@ -25,7 +25,7 @@ def search_similar_chunks(query: str, top_k: int = 5):
         query_vector=query_embedding,
         limit=top_k,
     )
-    return [hit.payload["text"] for hit in results]
+    return [hit.payload["rag_text"] for hit in results]
 
 
 # ==== Генерация ответа через Ollama ====
@@ -51,6 +51,24 @@ def generate_answer_with_ollama(chunks, question):
             answer += data.get("response", "")
 
     return answer.strip()
+
+
+def run_rag_analysis(team_name: str) -> dict:
+    """Generate a short analysis for a team's latest report using RAG."""
+    search_filter = Filter(
+        must=[FieldCondition(key="team", match=Match(value=team_name))]
+    )
+    points, _ = client.scroll(
+        collection_name=COLLECTION_NAME,
+        scroll_filter=search_filter,
+        with_payload=True,
+        limit=1000,
+    )
+    chunks = [p.payload.get("rag_text", "") for p in points]
+
+    question = "Кратко проанализируй результаты отчёта."
+    answer = generate_answer_with_ollama(chunks, question) if chunks else ""
+    return {"team": team_name, "analysis": answer}
 
 
 # ==== Основная функция ====
