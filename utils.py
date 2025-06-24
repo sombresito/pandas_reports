@@ -41,16 +41,19 @@ def extract_team_name(report_json):
     return _search(report_json)
 
 def chunk_and_save_json(json_data, uuid, team_name):
-    os.makedirs(f"chunks/{team_name}", exist_ok=True)
+    base_dir = os.path.join("chunks", team_name)
+    os.makedirs(base_dir, exist_ok=True)
 
     # Чанкуем
-    output_path = f"chunks/{team_name}/{uuid}.jsonl"
+    output_path = os.path.join(base_dir, f"{uuid}.jsonl")
     chunk_json_to_jsonl(json_data, output_path, uuid)
 
     # Удаляем старые отчёты (оставляем 3)
-    files = sorted(os.listdir(f"chunks/{team_name}"))
-    if len(files) > 3:
-        os.remove(f"chunks/{team_name}/{files[0]}")
+    files = [os.path.join(base_dir, f) for f in os.listdir(base_dir)]
+    files.sort(key=os.path.getmtime, reverse=True)
+    while len(files) > 3:
+        oldest = files.pop()  # last element is the oldest
+        os.remove(oldest)
 
 def analyze_and_post(uuid, team_name):
     result = run_rag_analysis(team_name)
