@@ -12,6 +12,8 @@ from pandas_chunking import chunk_json_to_jsonl
 from rag_pipeline import run_rag_analysis
 import requests
 
+ALLURE_API = os.getenv("ALLURE_API", "http://allure-report-bcc-qa:8080/api")
+
 logger = logging.getLogger(__name__)
 
 def extract_team_name(report_json):
@@ -70,7 +72,7 @@ def analyze_and_post(uuid, team_name):
     result = run_rag_analysis(team_name)
 
     # Отправка анализа
-    url = f"http://allure-report-bcc-qa:8080/api/analysis/report/{uuid}"
+    url = f"{ALLURE_API}/analysis/report/{uuid}"
     try:
         resp = requests.post(url, json=result, timeout=10)
     except requests.RequestException as e:
