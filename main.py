@@ -2,18 +2,23 @@ from fastapi import FastAPI, HTTPException, Request
 import requests
 import os
 import logging
-from utils import extract_team_name, chunk_and_save_json, analyze_and_post, _auth_kwargs
 from dotenv import load_dotenv
 
+# LOG_LEVEL is read before loading the .env file to match previous behaviour
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+from utils import (
+    extract_team_name,
+    chunk_and_save_json,
+    analyze_and_post,
+    _auth_kwargs,
+    ALLURE_API,
+)
 app = FastAPI()
-
-ALLURE_API = os.getenv("ALLURE_API", "http://allure-report-bcc-qa:8080/api")
 
 @app.post("/uuid/analyze")
 async def analyze_report(request: Request):
