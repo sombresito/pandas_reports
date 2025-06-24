@@ -87,6 +87,8 @@ def chunk_and_save_json(json_data, uuid, team_name):
         oldest = files.pop()  # last element is the oldest
         os.remove(oldest)
 
+    return output_path
+
 def analyze_and_post(uuid, team_name):
     try:
         result = run_rag_analysis(team_name)
