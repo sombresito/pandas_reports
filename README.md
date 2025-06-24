@@ -18,6 +18,8 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
   generation (default `local_models/intfloat/multilingual-e5-small`).
 - `QDRANT_URL` – base URL of the Qdrant service (default `http://localhost:6333`).
 - `QDRANT_API_KEY` – API key for connecting to Qdrant, if required.
+- `QDRANT_TIMEOUT` – request timeout for the Qdrant client (default `10`).
+- `OLLAMA_URL` – base URL of the Ollama API (default `http://localhost:11434/api/generate`).
 
 When authentication variables are provided, requests made by `main.py` and `utils.py` automatically attach the appropriate `Authorization` header or basic auth parameters.
 
@@ -49,5 +51,8 @@ the running service. When Qdrant is secured with an API key, set
 `QDRANT_API_KEY` with the appropriate token. Connection errors from
 `rag_pipeline.get_client` will be logged before raising a
 `QdrantConnectionError`.
+Increase `QDRANT_TIMEOUT` if requests to Qdrant repeatedly time out.
+Verify that `OLLAMA_URL` points to the running Ollama API when connection
+errors occur.
 If the client reports an incompatible version error, initialize it with
 `check_compatibility=False` to bypass the check.
