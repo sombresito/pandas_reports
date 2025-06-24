@@ -80,3 +80,24 @@ def test_analyze_and_post_success(monkeypatch):
     monkeypatch.setattr(utils, "ALLURE_API", "http://example")
     monkeypatch.setattr(utils.requests, "post", fake_post, raising=False)
     utils.analyze_and_post("uid", "team")
+
+
+def test_auth_kwargs_token(monkeypatch):
+    monkeypatch.setenv("ALLURE_TOKEN", "tok")
+    monkeypatch.delenv("ALLURE_USER", raising=False)
+    monkeypatch.delenv("ALLURE_PASS", raising=False)
+    assert utils._auth_kwargs() == {"headers": {"Authorization": "Bearer tok"}}
+
+
+def test_auth_kwargs_basic(monkeypatch):
+    monkeypatch.delenv("ALLURE_TOKEN", raising=False)
+    monkeypatch.setenv("ALLURE_USER", "u")
+    monkeypatch.setenv("ALLURE_PASS", "p")
+    assert utils._auth_kwargs() == {"auth": ("u", "p")}
+
+
+def test_auth_kwargs_none(monkeypatch):
+    monkeypatch.delenv("ALLURE_TOKEN", raising=False)
+    monkeypatch.delenv("ALLURE_USER", raising=False)
+    monkeypatch.delenv("ALLURE_PASS", raising=False)
+    assert utils._auth_kwargs() == {}

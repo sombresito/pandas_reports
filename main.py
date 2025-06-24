@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 import requests
 import os
-from utils import extract_team_name, chunk_and_save_json, analyze_and_post
+from utils import extract_team_name, chunk_and_save_json, analyze_and_post, _auth_kwargs
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,8 +19,9 @@ async def analyze_report(request: Request):
 
     # 1. Получаем JSON отчёт
     url = f"{ALLURE_API}/report/{uuid}/test-cases/aggregate"
+    auth_kwargs = _auth_kwargs()
     try:
-        resp = requests.get(url, timeout=10)
+        resp = requests.get(url, timeout=10, **auth_kwargs)
         resp.raise_for_status()
     except requests.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch report: {e}") from e

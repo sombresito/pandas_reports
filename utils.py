@@ -12,6 +12,25 @@ from pandas_chunking import chunk_json_to_jsonl
 from rag_pipeline import run_rag_analysis
 import requests
 
+def _auth_kwargs():
+    """Return request kwargs for optional Allure authentication.
+
+    If ``ALLURE_TOKEN`` is set, a bearer token header is used. Otherwise, if
+    ``ALLURE_USER`` and ``ALLURE_PASS`` are provided, basic authentication is
+    configured. When none of these variables are present, an empty ``dict`` is
+    returned.
+    """
+    token = os.getenv("ALLURE_TOKEN")
+    if token:
+        return {"headers": {"Authorization": f"Bearer {token}"}}
+
+    user = os.getenv("ALLURE_USER")
+    password = os.getenv("ALLURE_PASS")
+    if user and password:
+        return {"auth": (user, password)}
+
+    return {}
+
 ALLURE_API = os.getenv("ALLURE_API", "http://allure-report-bcc-qa:8080/api")
 
 logger = logging.getLogger(__name__)
@@ -73,8 +92,9 @@ def analyze_and_post(uuid, team_name):
 
     # Отправка анализа
     url = f"{ALLURE_API}/analysis/report/{uuid}"
+    auth_kwargs = _auth_kwargs()
     try:
-        resp = requests.post(url, json=result, timeout=10)
+        resp = requests.post(url, json=result, timeout=10, **auth_kwargs)
     except requests.RequestException as e:
         logger.error("Failed to post analysis for %s: %s", uuid, e)
         raise HTTPException(status_code=500, detail=f"Failed to post analysis: {e}") from e
