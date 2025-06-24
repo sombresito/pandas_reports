@@ -18,3 +18,12 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
   generation (default `local_models/intfloat/multilingual-e5-small`).
 
 When authentication variables are provided, requests made by `main.py` and `utils.py` automatically attach the appropriate `Authorization` header or basic auth parameters.
+
+## Logging
+
+All entry-point scripts configure Python's logging module. By default the level
+is `INFO`. Set the `LOG_LEVEL` environment variable to control verbosity, e.g.
+
+```bash
+LOG_LEVEL=DEBUG python embeddings.py
+```
