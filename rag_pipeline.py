@@ -1,7 +1,7 @@
 import requests
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import Filter, FieldCondition, Match
+from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 import json
 import os
 import logging
@@ -93,7 +93,7 @@ def run_rag_analysis(team_name: str) -> dict:
     """Generate a short analysis for a team's latest report using RAG."""
     client = get_client()
     search_filter = Filter(
-        must=[FieldCondition(key="team", match=Match(value=team_name))]
+        must=[FieldCondition(key="team", match=MatchValue(value=team_name))]
     )
     points, _ = client.scroll(
         collection_name=COLLECTION_NAME,
