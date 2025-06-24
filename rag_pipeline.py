@@ -4,6 +4,11 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import Filter, FieldCondition, Match
 import json
 import os
+import logging
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
+logger = logging.getLogger(__name__)
 
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
@@ -94,10 +99,10 @@ def run_rag_analysis(team_name: str) -> dict:
 
 # ==== Основная функция ====
 def ask(question: str):
-    print(f"[Q] {question}")
+    logger.info("[Q] %s", question)
     chunks = search_similar_chunks(question, top_k=5)
     answer = generate_answer_with_ollama(chunks, question)
-    print(f"\n[A] {answer}")
+    logger.info("[A] %s", answer)
 
 
 # ==== Пример запуска ====

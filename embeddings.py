@@ -4,10 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 import os
+import logging
 
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
+logger = logging.getLogger(__name__)
 
 # Paths can be overridden via environment variables
 MODEL_PATH = os.getenv("MODEL_PATH", "local_models/intfloat/multilingual-e5-small")
@@ -65,10 +70,10 @@ def save_embeddings(
 if __name__ == "__main__":
     df = load_chunks(CHUNKS_PATH)
     embeddings = create_embeddings(df)
-    print(f"[INFO] Сгенерировано эмбеддингов: {embeddings.shape}")
+    logger.info("Generated embeddings: %s", embeddings.shape)
 
     first_row = df.iloc[0]
     team = first_row["parentSuite"]
     report_uuid = first_row["report_uuid"]
     path = save_embeddings(embeddings, team, report_uuid)
-    print(f"[INFO] Embeddings saved to {path}")
+    logger.info("Embeddings saved to %s", path)

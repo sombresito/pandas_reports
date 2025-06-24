@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import logging
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import (
     Distance,
@@ -12,6 +13,10 @@ from qdrant_client.http.models import (
 )
 
 from embeddings import load_chunks
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
+logger = logging.getLogger(__name__)
 
 # Настройки
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
@@ -42,7 +47,7 @@ if not client.collection_exists(collection_name=COLLECTION_NAME):
         collection_name=COLLECTION_NAME,
         vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
     )
-    print(f"[INFO] Коллекция '{COLLECTION_NAME}' создана")
+    logger.info("Collection '%s' created", COLLECTION_NAME)
 
 # Удалим самые старые отчёты, если их уже 3 для этой команды
 search_filter = Filter(
@@ -70,7 +75,7 @@ if len(by_uuid) >= 3:
     for old_uuid, old_points in sorted_uuids[:-2]:
         ids_to_delete = [p.id for p in old_points]
         client.delete(collection_name=COLLECTION_NAME, points_selector={"points": ids_to_delete})
-        print(f"[INFO] Удалён старый отчёт: {old_uuid}")
+        logger.info("Removed old report: %s", old_uuid)
 
 # Генерация уникальных точек
 points = [
@@ -92,4 +97,4 @@ points = [
 
 # Загрузка
 client.upsert(collection_name=COLLECTION_NAME, points=points)
-print(f"[OK] Загружено {len(points)} точек для команды '{team}' и UUID {report_uuid}")
+logger.info("Uploaded %s points for team '%s' and UUID %s", len(points), team, report_uuid)
