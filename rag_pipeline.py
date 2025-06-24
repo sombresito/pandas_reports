@@ -88,16 +88,21 @@ def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
     context = "\n\n".join(chunks)
     prompt = f"Вот информация из отчёта:\n{context}\n\nВопрос: {question}\nОтвет:"
     
-    response = requests.post(
-        ollama_url,
-        json={
-            "model": OLLAMA_MODEL,   # или другая твоя модель
-            "prompt": prompt,
-            "stream": True
-        },
-        stream=True,
-        timeout=300
-    )
+    try:
+        response = requests.post(
+            ollama_url,
+            json={
+                "model": OLLAMA_MODEL,   # или другая твоя модель
+                "prompt": prompt,
+                "stream": True
+            },
+            stream=True,
+            timeout=300
+        )
+        response.raise_for_status()
+    except requests.RequestException as e:
+        logger.error("Failed to generate answer via Ollama: %s", e)
+        raise RagAnalysisError("Failed to generate answer") from e
 
     answer = ""
     for line in response.iter_lines():

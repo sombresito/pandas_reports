@@ -109,3 +109,20 @@ def test_run_rag_analysis_reraises(monkeypatch):
         rp.run_rag_analysis('team')
 
 
+def test_generate_answer_http_error(monkeypatch):
+    class FakeError(Exception):
+        pass
+
+    class Resp:
+        def raise_for_status(self):
+            raise FakeError("boom")
+        def iter_lines(self):
+            return []
+
+    req_mod = types.SimpleNamespace(post=lambda *a, **k: Resp(), RequestException=FakeError)
+    monkeypatch.setattr(rp, 'requests', req_mod)
+
+    with pytest.raises(rp.RagAnalysisError):
+        rp.generate_answer_with_ollama(["c"], "q")
+
+
