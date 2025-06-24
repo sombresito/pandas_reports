@@ -15,12 +15,30 @@ OLLAMA_MODEL = "qwen3:0.6b"
 
 
 # ==== Инициализация ====
-model = SentenceTransformer(MODEL_PATH)
-client = QdrantClient(url=QDRANT_URL)
+_MODEL = None
+_CLIENT = None
+
+
+def get_model():
+    """Return cached SentenceTransformer instance."""
+    global _MODEL
+    if _MODEL is None:
+        _MODEL = SentenceTransformer(MODEL_PATH)
+    return _MODEL
+
+
+def get_client():
+    """Return cached QdrantClient instance."""
+    global _CLIENT
+    if _CLIENT is None:
+        _CLIENT = QdrantClient(url=QDRANT_URL)
+    return _CLIENT
 
 
 # ==== Поиск релевантных векторов ====
 def search_similar_chunks(query: str, top_k: int = 5):
+    model = get_model()
+    client = get_client()
     query_embedding = model.encode(query, convert_to_numpy=True).tolist()
     results = client.search(
         collection_name=COLLECTION_NAME,
@@ -57,6 +75,7 @@ def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
 
 def run_rag_analysis(team_name: str) -> dict:
     """Generate a short analysis for a team's latest report using RAG."""
+    client = get_client()
     search_filter = Filter(
         must=[FieldCondition(key="team", match=Match(value=team_name))]
     )
