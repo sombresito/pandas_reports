@@ -1,7 +1,7 @@
 import requests
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import Distance, Filter, FieldCondition, Match
+from qdrant_client.http.models import Filter, FieldCondition, Match
 import json
 import os
 

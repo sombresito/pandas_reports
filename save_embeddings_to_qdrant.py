@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, Match
-import os
 
 # Настройки
 QDRANT_URL = QdrantClient(host="localhost", port=6333)
@@ -42,7 +41,6 @@ existing = client.scroll(
 
 # Группируем по UUID и удаляем, если больше 2 старых
 from collections import defaultdict
-from datetime import datetime
 
 by_uuid = defaultdict(list)
 for point in existing:

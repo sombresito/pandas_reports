@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 import requests
 import os
-import json
 from utils import extract_team_name, chunk_and_save_json, analyze_and_post
 from dotenv import load_dotenv
 
