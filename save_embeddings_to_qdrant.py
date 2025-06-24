@@ -22,15 +22,16 @@ VECTOR_SIZE = 384
 
 # Загружаем данные
 CHUNKS_PATH = os.getenv("CHUNKS_PATH", "chunks")
-EMBEDDINGS_PATH = os.getenv("EMBEDDINGS_PATH", "embeddings.npy")
+EMBEDDINGS_DIR = os.getenv("EMBEDDINGS_DIR", "embeddings")
 
 df = load_chunks(CHUNKS_PATH)
-embeddings = np.load(EMBEDDINGS_PATH)
-
-# Получаем название команды и UUID отчёта из первой строки
+# Определяем команду и UUID отчёта
 first_row = df.iloc[0]
 team = first_row["parentSuite"]
 report_uuid = first_row["report_uuid"]
+
+emb_path = os.path.join(EMBEDDINGS_DIR, team, f"{report_uuid}.npy")
+embeddings = np.load(emb_path)
 
 # Подключаемся к Qdrant
 client = qdrant_client

@@ -12,7 +12,8 @@ from sentence_transformers import SentenceTransformer
 # Paths can be overridden via environment variables
 MODEL_PATH = os.getenv("MODEL_PATH", "local_models/intfloat/multilingual-e5-small")
 CHUNKS_PATH = os.getenv("CHUNKS_PATH", "chunks")
-EMBEDDINGS_PATH = os.getenv("EMBEDDINGS_PATH", "embeddings.npy")
+# Base directory for per-report embedding files
+EMBEDDINGS_DIR = os.getenv("EMBEDDINGS_DIR", "embeddings")
 
 
 def load_chunks(path: str | os.PathLike) -> pd.DataFrame:
@@ -40,8 +41,34 @@ def create_embeddings(df: pd.DataFrame, model_path: str = MODEL_PATH) -> np.ndar
     )
 
 
+def save_embeddings(
+    embeddings: np.ndarray,
+    team_name: str,
+    report_uuid: str,
+    base_dir: str | os.PathLike = EMBEDDINGS_DIR,
+) -> Path:
+    """Save ``embeddings`` for ``team_name``/``report_uuid`` and clean up old files.
+
+    Returns the path where the embeddings were written.
+    """
+    dir_path = Path(base_dir) / team_name
+    dir_path.mkdir(parents=True, exist_ok=True)
+    file_path = dir_path / f"{report_uuid}.npy"
+    np.save(file_path, embeddings)
+
+    files = sorted(dir_path.glob("*.npy"), key=lambda p: p.stat().st_mtime, reverse=True)
+    for old in files[3:]:
+        old.unlink()
+    return file_path
+
+
 if __name__ == "__main__":
     df = load_chunks(CHUNKS_PATH)
     embeddings = create_embeddings(df)
     print(f"[INFO] Сгенерировано эмбеддингов: {embeddings.shape}")
-    np.save(EMBEDDINGS_PATH, embeddings)
+
+    first_row = df.iloc[0]
+    team = first_row["parentSuite"]
+    report_uuid = first_row["report_uuid"]
+    path = save_embeddings(embeddings, team, report_uuid)
+    print(f"[INFO] Embeddings saved to {path}")
