@@ -12,6 +12,8 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
   by `embeddings.py` and `save_embeddings_to_qdrant.py` (default `chunks`).
 - `EMBEDDINGS_PATH` – file path where embeddings are stored or loaded
   (default `embeddings.npy`).
+- `EMBEDDINGS_DIR` – directory where per-report embedding files are created
+  by `embeddings.py` (default `embeddings`).
 - `MODEL_PATH` – location of the SentenceTransformer model used for embedding
   generation (default `local_models/intfloat/multilingual-e5-small`).
 
