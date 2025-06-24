@@ -4,3 +4,4 @@ reports/
 .env
 embeddings.npy
 output_chunks.jsonl
+__pycache__/
