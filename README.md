@@ -45,6 +45,35 @@ is `INFO`. Set the `LOG_LEVEL` environment variable to control verbosity, e.g.
 LOG_LEVEL=DEBUG python embeddings.py
 ```
 
+## Embedding workflow
+
+Follow these steps when operating the components manually:
+
+1. **Generate embeddings** from chunk files. Set `CHUNKS_PATH` to a single
+   `.jsonl` file or a directory of such files and run:
+
+   ```bash
+   python embeddings.py
+   ```
+
+   This writes a numpy file under `EMBEDDINGS_DIR/<team>/<uuid>.npy` and keeps
+   only the three most recent reports per team.
+
+2. **Upload embeddings** to Qdrant using the refactored helper:
+
+   ```bash
+   python save_embeddings_to_qdrant.py
+   ```
+
+   The upload script reads the chunk data and the `.npy` file and inserts the
+   vectors into the `allure_chunks` collection. The `/uuid/analyze` endpoint can
+   also perform this step automatically.
+
+3. **Run analysis** once the embeddings are stored. Issue a POST request to
+   `/uuid/analyze` with the report UUID to fetch the report, generate/upload
+   embeddings (if not already done) and post the resulting analysis back to
+   Allure.
+
 ## Troubleshooting
 
 If the application fails to connect to Qdrant, ensure that `QDRANT_URL` points to
