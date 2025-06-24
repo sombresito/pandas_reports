@@ -30,7 +30,6 @@ qdrant_client = QdrantClient(
     check_compatibility=False,
 )
 COLLECTION_NAME = "allure_chunks"
-VECTOR_SIZE = 384
 
 
 def ensure_collection(client: QdrantClient, vector_size: int) -> None:
