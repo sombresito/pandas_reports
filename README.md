@@ -17,8 +17,6 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
 - `MODEL_PATH` – location of the SentenceTransformer model used for embedding
   generation (default `local_models/intfloat/multilingual-e5-small`).
 - `QDRANT_URL` – base URL of the Qdrant service (default `http://localhost:6333`).
-- `QDRANT_API_KEY` – API key for connecting to Qdrant. Leave unset when the
-  service does not require authentication so the client skips sending a header.
 - `QDRANT_TIMEOUT` – request timeout for the Qdrant client (default `10`).
 - `OLLAMA_URL` – base URL of the Ollama API (default `http://localhost:11434/api/generate`).
 
@@ -48,15 +46,10 @@ LOG_LEVEL=DEBUG python embeddings.py
 ## Troubleshooting
 
 If the application fails to connect to Qdrant, ensure that `QDRANT_URL` points to
-the running service. When Qdrant is secured with an API key, set
-`QDRANT_API_KEY` with the appropriate token. Connection errors from
-`rag_pipeline.get_client` will be logged before raising a
+the running service. Connection errors from `rag_pipeline.get_client` will be logged before raising a
 `QdrantConnectionError`.
 Increase `QDRANT_TIMEOUT` if requests to Qdrant repeatedly time out.
 Verify that `OLLAMA_URL` points to the running Ollama API when connection
 errors occur.
-A `403` response from Qdrant usually means the API key is missing or incorrect.
-When your Qdrant instance does not enforce API keys, ensure `QDRANT_API_KEY`
-is **unset** so the client does not attempt authenticated requests.
 If the client reports an incompatible version error, initialize it with
 `check_compatibility=False` to bypass the check.
