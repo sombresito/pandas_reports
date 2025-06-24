@@ -78,7 +78,7 @@ def chunk_and_save_json(json_data, uuid, team_name):
 
     # Чанкуем
     output_path = os.path.join(base_dir, f"{uuid}.jsonl")
-    chunk_json_to_jsonl(json_data, output_path, uuid)
+    df = chunk_json_to_jsonl(json_data, output_path, uuid)
 
     # Удаляем старые отчёты (оставляем 3)
     files = [os.path.join(base_dir, f) for f in os.listdir(base_dir)]
@@ -87,7 +87,7 @@ def chunk_and_save_json(json_data, uuid, team_name):
         oldest = files.pop()  # last element is the oldest
         os.remove(oldest)
 
-    return output_path
+    return output_path, df
 
 def analyze_and_post(uuid, team_name):
     try:

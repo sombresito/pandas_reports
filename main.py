@@ -51,12 +51,13 @@ async def analyze_report(request: Request):
     logger.info("Team name extracted: %s", team_name)
 
     # 3. Чанкуем и сохраняем
-    json_path = chunk_and_save_json(report_data, uuid, team_name)
+    json_path, df = chunk_and_save_json(report_data, uuid, team_name)
     logger.info("Chunks saved for %s", uuid)
 
     # 4. Генерация и загрузка эмбеддингов
     try:
-        df = load_chunks(json_path)
+        if df is None:
+            df = load_chunks(json_path)
         embeddings = create_embeddings(df)
         upload_embeddings(df, embeddings, team_name, uuid)
         logger.info("Embeddings uploaded for %s", uuid)

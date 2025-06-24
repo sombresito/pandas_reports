@@ -120,7 +120,7 @@ def _setup_success(monkeypatch):
     monkeypatch.setattr(main, "ALLURE_API", "http://example")
     monkeypatch.setattr(main.requests, "get", fake_get, raising=False)
     monkeypatch.setattr(main, "extract_team_name", lambda data: "team1")
-    monkeypatch.setattr(main, "chunk_and_save_json", lambda *a, **k: "out.jsonl")
+    monkeypatch.setattr(main, "chunk_and_save_json", lambda *a, **k: ("out.jsonl", []))
     monkeypatch.setattr(main, "load_chunks", lambda p: [])
     monkeypatch.setattr(main, "create_embeddings", lambda df: [])
     monkeypatch.setattr(main, "upload_embeddings", lambda *a, **k: None)
