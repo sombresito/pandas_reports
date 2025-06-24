@@ -2,6 +2,14 @@ import requests
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
+try:
+    from qdrant_client.http.exceptions import UnexpectedResponse, QdrantConnectionError as QdrantClientConnectionError
+except Exception:  # pragma: no cover - package may not be installed during tests
+    class UnexpectedResponse(Exception):
+        pass
+
+    class QdrantClientConnectionError(Exception):
+        pass
 import json
 import os
 import logging
@@ -27,6 +35,10 @@ _CLIENT = None
 
 class QdrantConnectionError(Exception):
     """Raised when a connection to Qdrant cannot be established."""
+
+
+class RagAnalysisError(Exception):
+    """Raised when analysis fails due to Qdrant errors."""
 
 
 def get_model():
@@ -95,12 +107,16 @@ def run_rag_analysis(team_name: str) -> dict:
     search_filter = Filter(
         must=[FieldCondition(key="team", match=MatchValue(value=team_name))]
     )
-    points, _ = client.scroll(
-        collection_name=COLLECTION_NAME,
-        scroll_filter=search_filter,
-        with_payload=True,
-        limit=1000,
-    )
+    try:
+        points, _ = client.scroll(
+            collection_name=COLLECTION_NAME,
+            scroll_filter=search_filter,
+            with_payload=True,
+            limit=1000,
+        )
+    except (UnexpectedResponse, QdrantClientConnectionError) as e:  # pragma: no cover - network errors hard to simulate
+        logger.error("Failed to retrieve chunks from Qdrant: %s", e)
+        raise RagAnalysisError("Qdrant unreachable or returned an error") from e
     chunks = [p.payload.get("rag_text", "") for p in points]
 
     question = "Кратко проанализируй результаты отчёта."

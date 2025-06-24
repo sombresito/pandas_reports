@@ -14,6 +14,7 @@ sys.modules.setdefault("pandas_chunking", pandas_chunking_stub)
 
 rag_pipeline_stub = types.ModuleType("rag_pipeline")
 rag_pipeline_stub.run_rag_analysis = lambda *a, **k: {}
+rag_pipeline_stub.RagAnalysisError = type("RagAnalysisError", (Exception,), {})
 sys.modules.setdefault("rag_pipeline", rag_pipeline_stub)
 
 requests_stub = types.ModuleType("requests")
@@ -80,6 +81,16 @@ def test_analyze_and_post_success(monkeypatch):
     monkeypatch.setattr(utils, "ALLURE_API", "http://example")
     monkeypatch.setattr(utils.requests, "post", fake_post, raising=False)
     utils.analyze_and_post("uid", "team")
+
+
+def test_analyze_and_post_qdrant_error(monkeypatch):
+    def fail(*a, **k):
+        raise utils.RagAnalysisError("boom")
+
+    monkeypatch.setattr(utils, "run_rag_analysis", fail)
+    with pytest.raises(utils.HTTPException) as exc:
+        utils.analyze_and_post("uid", "team")
+    assert "Qdrant service is unreachable" in str(exc.value)
 
 
 def test_auth_kwargs_token(monkeypatch):

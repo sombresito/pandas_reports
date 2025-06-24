@@ -9,7 +9,7 @@ except Exception:  # pragma: no cover - fastapi not installed during tests
             self.detail = detail
             super().__init__(detail)
 from pandas_chunking import chunk_json_to_jsonl
-from rag_pipeline import run_rag_analysis
+from rag_pipeline import run_rag_analysis, RagAnalysisError
 import requests
 
 def _auth_kwargs():
@@ -88,7 +88,11 @@ def chunk_and_save_json(json_data, uuid, team_name):
         os.remove(oldest)
 
 def analyze_and_post(uuid, team_name):
-    result = run_rag_analysis(team_name)
+    try:
+        result = run_rag_analysis(team_name)
+    except RagAnalysisError as e:
+        logger.error("RAG analysis failed for %s: %s", uuid, e)
+        raise HTTPException(status_code=500, detail="Qdrant service is unreachable") from e
 
     # Отправка анализа
     url = f"{ALLURE_API}/analysis/report/{uuid}"

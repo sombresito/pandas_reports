@@ -38,6 +38,7 @@ class FakeClient:
 
 qc_mod = types.ModuleType('qdrant_client')
 qc_mod.QdrantClient = FakeClient
+qc_mod.QdrantConnectionError = type('QdrantConnectionError', (Exception,), {})
 sys.modules['qdrant_client'] = qc_mod
 sys.modules.setdefault('qdrant_client.http', types.ModuleType('qdrant_client.http'))
 models_mod = types.ModuleType('qdrant_client.http.models')
@@ -45,6 +46,9 @@ models_mod.Filter = lambda *a, **k: None
 models_mod.FieldCondition = lambda *a, **k: None
 models_mod.MatchValue = lambda *a, **k: None
 sys.modules['qdrant_client.http.models'] = models_mod
+exc_mod = types.ModuleType('qdrant_client.http.exceptions')
+exc_mod.UnexpectedResponse = type('UnexpectedResponse', (Exception,), {})
+sys.modules['qdrant_client.http.exceptions'] = exc_mod
 
 # requests may not be installed during tests
 sys.modules.setdefault('requests', types.ModuleType('requests'))
@@ -55,6 +59,7 @@ importlib.reload(rp)
 # replace the public name with a stub so later imports get a dummy module
 stub = types.ModuleType("rag_pipeline")
 stub.run_rag_analysis = lambda *a, **k: {}
+stub.RagAnalysisError = type("RagAnalysisError", (Exception,), {})
 sys.modules["rag_pipeline"] = stub
 
 
@@ -89,5 +94,18 @@ def test_run_rag_analysis_uses_cached_client(monkeypatch):
 
     rp.run_rag_analysis('team')
     assert client_calls == ['init']  # cached
+
+
+def test_run_rag_analysis_reraises(monkeypatch):
+    monkeypatch.setattr(rp, 'generate_answer_with_ollama', lambda *a, **k: '')
+
+    class BadClient:
+        def scroll(self, *a, **k):
+            raise rp.UnexpectedResponse('boom')
+
+    monkeypatch.setattr(rp, 'get_client', lambda: BadClient())
+
+    with pytest.raises(rp.RagAnalysisError):
+        rp.run_rag_analysis('team')
 
 
