@@ -58,8 +58,8 @@ def chunk_json_to_jsonl(data, output_path: str, report_uuid: str) -> pd.DataFram
                 "unknown",
             ),
             "status": t.get("status"),
-            "statusMessage": t.get("statusMessage", "").strip(),
-            "statusTrace": t.get("statusTrace", "").strip(),
+            "statusMessage": (t.get("statusMessage") or "").strip(),
+            "statusTrace": (t.get("statusTrace") or "").strip(),
         }
         for t in raw
     ])
