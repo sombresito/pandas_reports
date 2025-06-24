@@ -54,5 +54,6 @@ the running service. When Qdrant is secured with an API key, set
 Increase `QDRANT_TIMEOUT` if requests to Qdrant repeatedly time out.
 Verify that `OLLAMA_URL` points to the running Ollama API when connection
 errors occur.
+A `403` response from Qdrant usually means the API key is missing or incorrect.
 If the client reports an incompatible version error, initialize it with
 `check_compatibility=False` to bypass the check.

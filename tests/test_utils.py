@@ -90,7 +90,7 @@ def test_analyze_and_post_qdrant_error(monkeypatch):
     monkeypatch.setattr(utils, "run_rag_analysis", fail)
     with pytest.raises(utils.HTTPException) as exc:
         utils.analyze_and_post("uid", "team")
-    assert "Qdrant service is unreachable" in str(exc.value)
+    assert str(exc.value) == "Qdrant service is unreachable: boom"
 
 
 def test_auth_kwargs_token(monkeypatch):
