@@ -16,7 +16,9 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
   by `embeddings.py` (default `embeddings`).
 - `MODEL_PATH` – location of the SentenceTransformer model used for embedding
   generation (default `local_models/intfloat/multilingual-e5-small`).
-- `QDRANT_URL` – base URL of the Qdrant service (default `http://localhost:6333`).
+- `QDRANT_URL` – base URL of the Qdrant service used by
+  `rag_pipeline.get_client` and `save_embeddings_to_qdrant.py`
+  (default `http://localhost:6333`).
 - `QDRANT_TIMEOUT` – request timeout for the Qdrant client (default `10`).
 - `OLLAMA_URL` – base URL of the Ollama API (default `http://localhost:11434/api/generate`).
 

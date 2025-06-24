@@ -21,9 +21,14 @@ logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 logger = logging.getLogger(__name__)
 
 # Настройки
-QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
-QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
-qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_TIMEOUT = int(os.getenv("QDRANT_TIMEOUT", "10"))
+qdrant_client = QdrantClient(
+    url=QDRANT_URL,
+    prefer_grpc=False,
+    timeout=QDRANT_TIMEOUT,
+    check_compatibility=False,
+)
 COLLECTION_NAME = "allure_chunks"
 VECTOR_SIZE = 384
 
