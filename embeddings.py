@@ -20,6 +20,16 @@ CHUNKS_PATH = os.getenv("CHUNKS_PATH", "chunks")
 # Base directory for per-report embedding files
 EMBEDDINGS_DIR = os.getenv("EMBEDDINGS_DIR", "embeddings")
 
+_MODEL = None
+
+
+def get_model() -> SentenceTransformer:
+    """Return cached SentenceTransformer instance."""
+    global _MODEL
+    if _MODEL is None:
+        _MODEL = SentenceTransformer(MODEL_PATH)
+    return _MODEL
+
 
 def load_chunks(path: str | os.PathLike) -> pd.DataFrame:
     """Return a DataFrame with chunk data from ``path``.
@@ -39,7 +49,10 @@ def load_chunks(path: str | os.PathLike) -> pd.DataFrame:
 
 def create_embeddings(df: pd.DataFrame, model_path: str = MODEL_PATH) -> np.ndarray:
     """Generate embeddings for the ``rag_text`` column in ``df``."""
-    model = SentenceTransformer(model_path)
+    if model_path != MODEL_PATH:
+        model = SentenceTransformer(model_path)
+    else:
+        model = get_model()
     texts = df["rag_text"].tolist()
     return model.encode(
         texts, batch_size=64, show_progress_bar=True, convert_to_numpy=True
