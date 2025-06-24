@@ -19,10 +19,12 @@ async def analyze_report(request: Request):
 
     # 1. Получаем JSON отчёт
     url = f"{ALLURE_API}/report/{uuid}/test-cases/aggregate"
-    resp = requests.get(url)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch report: {resp.text}")
-    
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch report: {e}") from e
+
     report_data = resp.json()
 
     # 2. Получаем название команды
