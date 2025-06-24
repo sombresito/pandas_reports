@@ -34,8 +34,9 @@ def test_cleanup_keeps_three_most_recent(tmp_path, monkeypatch):
 
     team = "team1"
     for i in range(5):
-        path = utils.chunk_and_save_json({}, f"id{i}", team)
+        path, df = utils.chunk_and_save_json({}, f"id{i}", team)
         assert path.endswith(f"id{i}.jsonl")
+        assert df is None
         time.sleep(0.01)
 
     files = sorted(os.listdir(tmp_path / "chunks" / team))
@@ -49,8 +50,9 @@ def test_no_deletion_when_three_files(tmp_path, monkeypatch):
 
     team = "team2"
     for i in range(3):
-        path = utils.chunk_and_save_json({}, f"id{i}", team)
+        path, df = utils.chunk_and_save_json({}, f"id{i}", team)
         assert path.endswith(f"id{i}.jsonl")
+        assert df is None
         time.sleep(0.01)
 
     files = sorted(os.listdir(tmp_path / "chunks" / team))
