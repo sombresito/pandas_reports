@@ -43,7 +43,7 @@ sys.modules.setdefault('qdrant_client.http', types.ModuleType('qdrant_client.htt
 models_mod = types.ModuleType('qdrant_client.http.models')
 models_mod.Filter = lambda *a, **k: None
 models_mod.FieldCondition = lambda *a, **k: None
-models_mod.Match = lambda *a, **k: None
+models_mod.MatchValue = lambda *a, **k: None
 sys.modules['qdrant_client.http.models'] = models_mod
 
 # requests may not be installed during tests

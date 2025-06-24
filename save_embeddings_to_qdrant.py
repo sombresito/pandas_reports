@@ -9,7 +9,7 @@ from qdrant_client.http.models import (
     PointStruct,
     Filter,
     FieldCondition,
-    Match,
+    MatchValue,
 )
 
 from embeddings import load_chunks
@@ -51,7 +51,7 @@ if not client.collection_exists(collection_name=COLLECTION_NAME):
 
 # Удалим самые старые отчёты, если их уже 3 для этой команды
 search_filter = Filter(
-    must=[FieldCondition(key="team", match=Match(value=team))]
+    must=[FieldCondition(key="team", match=MatchValue(value=team))]
 )
 existing = client.scroll(
     collection_name=COLLECTION_NAME,
