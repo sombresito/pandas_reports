@@ -21,6 +21,18 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
 
 When authentication variables are provided, requests made by `main.py` and `utils.py` automatically attach the appropriate `Authorization` header or basic auth parameters.
 
+## Launching Qdrant
+
+To run Qdrant locally you can start the official Docker container:
+
+```bash
+docker run -p 6333:6333 qdrant/qdrant
+```
+
+This exposes the service on port `6333` so that it can be reached at
+`http://localhost:6333`. Set the `QDRANT_URL` environment variable to that
+address (or another hostname/port if you change the mapping).
+
 ## Logging
 
 All entry-point scripts configure Python's logging module. By default the level
