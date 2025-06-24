@@ -63,6 +63,7 @@ def test_analyze_and_post_non_200(monkeypatch):
 
         return Resp()
 
+    monkeypatch.setattr(utils, "ALLURE_API", "http://example")
     monkeypatch.setattr(utils.requests, "post", fake_post, raising=False)
     with pytest.raises(utils.HTTPException):
         utils.analyze_and_post("uid", "team")
@@ -76,5 +77,6 @@ def test_analyze_and_post_success(monkeypatch):
 
         return Resp()
 
+    monkeypatch.setattr(utils, "ALLURE_API", "http://example")
     monkeypatch.setattr(utils.requests, "post", fake_post, raising=False)
     utils.analyze_and_post("uid", "team")
