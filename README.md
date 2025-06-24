@@ -49,3 +49,5 @@ the running service. When Qdrant is secured with an API key, set
 `QDRANT_API_KEY` with the appropriate token. Connection errors from
 `rag_pipeline.get_client` will be logged before raising a
 `QdrantConnectionError`.
+If the client reports an incompatible version error, initialize it with
+`check_compatibility=False` to bypass the check.
