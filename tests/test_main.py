@@ -11,9 +11,11 @@ fastapi_mod = types.ModuleType("fastapi")
 requests_mod = types.ModuleType("requests")
 sys.modules.setdefault("requests", requests_mod)
 
-pd_mod = types.ModuleType("pandas")
+pd_mod = sys.modules.setdefault("pandas", types.ModuleType("pandas"))
 pd_mod.DataFrame = object
-sys.modules.setdefault("pandas", pd_mod)
+
+np_mod = sys.modules.setdefault("numpy", types.ModuleType("numpy"))
+np_mod.ndarray = object
 
 pandas_chunking_stub = types.ModuleType("pandas_chunking")
 pandas_chunking_stub.chunk_json_to_jsonl = lambda *a, **k: None
@@ -23,6 +25,26 @@ rag_pipeline_stub = types.ModuleType("rag_pipeline")
 rag_pipeline_stub.run_rag_analysis = lambda *a, **k: {}
 rag_pipeline_stub.RagAnalysisError = type("RagAnalysisError", (Exception,), {})
 sys.modules.setdefault("rag_pipeline", rag_pipeline_stub)
+
+# stub qdrant client so save_embeddings_to_qdrant can be imported
+qc_stub = types.ModuleType("qdrant_client")
+class _QC:
+    def __init__(self, *a, **k):
+        pass
+qc_stub.QdrantClient = _QC
+sys.modules.setdefault("qdrant_client", qc_stub)
+sys.modules.setdefault("qdrant_client.http", types.ModuleType("qdrant_client.http"))
+models_stub = types.ModuleType("qdrant_client.http.models")
+for name in [
+    "Distance",
+    "VectorParams",
+    "PointStruct",
+    "Filter",
+    "FieldCondition",
+    "MatchValue",
+]:
+    setattr(models_stub, name, object)
+sys.modules.setdefault("qdrant_client.http.models", models_stub)
 
 class HTTPException(Exception):
     def __init__(self, status_code: int, detail: str):
@@ -98,7 +120,10 @@ def _setup_success(monkeypatch):
     monkeypatch.setattr(main, "ALLURE_API", "http://example")
     monkeypatch.setattr(main.requests, "get", fake_get, raising=False)
     monkeypatch.setattr(main, "extract_team_name", lambda data: "team1")
-    monkeypatch.setattr(main, "chunk_and_save_json", lambda *a, **k: None)
+    monkeypatch.setattr(main, "chunk_and_save_json", lambda *a, **k: "out.jsonl")
+    monkeypatch.setattr(main, "load_chunks", lambda p: [])
+    monkeypatch.setattr(main, "create_embeddings", lambda df: [])
+    monkeypatch.setattr(main, "upload_embeddings", lambda *a, **k: None)
 
 
 def test_analyze_success(monkeypatch):

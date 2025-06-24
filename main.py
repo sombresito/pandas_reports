@@ -18,6 +18,8 @@ from utils import (
     _auth_kwargs,
     ALLURE_API,
 )
+from embeddings import create_embeddings, load_chunks
+from save_embeddings_to_qdrant import upload_embeddings
 app = FastAPI()
 
 @app.post("/uuid/analyze")
@@ -49,10 +51,20 @@ async def analyze_report(request: Request):
     logger.info("Team name extracted: %s", team_name)
 
     # 3. Чанкуем и сохраняем
-    chunk_and_save_json(report_data, uuid, team_name)
+    json_path = chunk_and_save_json(report_data, uuid, team_name)
     logger.info("Chunks saved for %s", uuid)
 
-    # 4. Анализ и отправка результата
+    # 4. Генерация и загрузка эмбеддингов
+    try:
+        df = load_chunks(json_path)
+        embeddings = create_embeddings(df)
+        upload_embeddings(df, embeddings, team_name, uuid)
+        logger.info("Embeddings uploaded for %s", uuid)
+    except Exception as e:
+        logger.error("Failed to upload embeddings for %s: %s", uuid, e)
+        raise HTTPException(status_code=500, detail=f"Failed to upload embeddings: {e}") from e
+
+    # 5. Анализ и отправка результата
     try:
         analyze_and_post(uuid, team_name)
         logger.info("Analysis posted for %s", uuid)
