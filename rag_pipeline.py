@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+# Treat empty strings as unset so the client won't send a header when the
+# environment variable is defined but blank
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
 QDRANT_TIMEOUT = int(os.getenv("QDRANT_TIMEOUT", "10"))
 COLLECTION_NAME = "allure_chunks"
 # URL for the Ollama API can be overridden by environment variable
