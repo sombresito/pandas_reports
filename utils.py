@@ -1,7 +1,18 @@
 import os
+import logging
+try:
+    from fastapi import HTTPException
+except Exception:  # pragma: no cover - fastapi not installed during tests
+    class HTTPException(Exception):
+        def __init__(self, status_code: int, detail: str):
+            self.status_code = status_code
+            self.detail = detail
+            super().__init__(detail)
 from pandas_chunking import chunk_json_to_jsonl
 from rag_pipeline import run_rag_analysis
 import requests
+
+logger = logging.getLogger(__name__)
 
 def extract_team_name(report_json):
     """Return the first ``parentSuite`` label value found in the report data.
@@ -60,4 +71,10 @@ def analyze_and_post(uuid, team_name):
 
     # Отправка анализа
     url = f"http://allure-report-bcc-qa:8080/api/analysis/report/{uuid}"
-    requests.post(url, json=result)
+    try:
+        resp = requests.post(url, json=result, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        logger.error("Failed to post analysis for %s: %s", uuid, e)
+        raise HTTPException(status_code=500, detail=f"Failed to post analysis: {e}") from e
+
