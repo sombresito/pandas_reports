@@ -2,7 +2,16 @@ import os
 import numpy as np
 import pandas as pd
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, Match
+from qdrant_client.http.models import (
+    Distance,
+    VectorParams,
+    PointStruct,
+    Filter,
+    FieldCondition,
+    Match,
+)
+
+from embeddings import load_chunks
 
 # Настройки
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
@@ -12,9 +21,10 @@ COLLECTION_NAME = "allure_chunks"
 VECTOR_SIZE = 384
 
 # Загружаем данные
-CHUNKS_PATH = os.getenv("CHUNKS_PATH", "output_chunks.jsonl")
+CHUNKS_PATH = os.getenv("CHUNKS_PATH", "chunks")
 EMBEDDINGS_PATH = os.getenv("EMBEDDINGS_PATH", "embeddings.npy")
-df = pd.read_json(CHUNKS_PATH, lines=True)
+
+df = load_chunks(CHUNKS_PATH)
 embeddings = np.load(EMBEDDINGS_PATH)
 
 # Получаем название команды и UUID отчёта из первой строки

@@ -8,4 +8,11 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
 - `ALLURE_TOKEN` – if set, a bearer token used for authentication when contacting the API.
 - `ALLURE_USER` and `ALLURE_PASS` – credentials for HTTP basic authentication. These are used only when a token is not provided.
 
+- `CHUNKS_PATH` – path to a chunk file or directory containing chunk files used
+  by `embeddings.py` and `save_embeddings_to_qdrant.py` (default `chunks`).
+- `EMBEDDINGS_PATH` – file path where embeddings are stored or loaded
+  (default `embeddings.npy`).
+- `MODEL_PATH` – location of the SentenceTransformer model used for embedding
+  generation (default `local_models/intfloat/multilingual-e5-small`).
+
 When authentication variables are provided, requests made by `main.py` and `utils.py` automatically attach the appropriate `Authorization` header or basic auth parameters.
