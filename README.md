@@ -18,9 +18,9 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
   generation (default `local_models/intfloat/multilingual-e5-small`).
 - `QDRANT_URL` – base URL of the Qdrant service used by
   `rag_pipeline.get_client` and `save_embeddings_to_qdrant.py`
-  (default `http://localhost:6333`).
+  (default `http://host.docker.internal:6333`).
 - `QDRANT_TIMEOUT` – request timeout for the Qdrant client (default `10`).
-- `OLLAMA_URL` – base URL of the Ollama API (default `http://localhost:11434/api/generate`).
+- `OLLAMA_URL` – base URL of the Ollama API (default `http://host.docker.internal:11434/api/generate`).
 
 When authentication variables are provided, requests made by `main.py` and `utils.py` automatically attach the appropriate `Authorization` header or basic auth parameters.
 
@@ -33,7 +33,7 @@ docker run -p 6333:6333 qdrant/qdrant
 ```
 
 This exposes the service on port `6333` so that it can be reached at
-`http://localhost:6333`. Set the `QDRANT_URL` environment variable to that
+`http://host.docker.internal:6333`. Set the `QDRANT_URL` environment variable to that
 address (or another hostname/port if you change the mapping).
 
 ## Logging

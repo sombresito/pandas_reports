@@ -21,7 +21,7 @@ logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 logger = logging.getLogger(__name__)
 
 # Настройки
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", "http://host.docker.internal:6333")
 QDRANT_TIMEOUT = int(os.getenv("QDRANT_TIMEOUT", "10"))
 qdrant_client = QdrantClient(
     url=QDRANT_URL,
@@ -80,7 +80,7 @@ def upload_embeddings(
 
     points = [
         PointStruct(
-            id=f"{team}_{report_uuid}_{i}",
+            id=report_uuid,
             vector=embeddings[i],
             payload={
                 "rag_text": df.loc[i, "rag_text"],

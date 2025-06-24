@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", "http://host.docker.internal:6333")
 # No authentication is required when talking to Qdrant so we don't accept
 # an API key. Simply configure the base URL and timeout.
 QDRANT_TIMEOUT = int(os.getenv("QDRANT_TIMEOUT", "10"))
 COLLECTION_NAME = "allure_chunks"
 # URL for the Ollama API can be overridden by environment variable
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
-OLLAMA_MODEL = "qwen3:0.6b"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://host.docker.internal:11434/api/generate")
+OLLAMA_MODEL = "mistral"
 
 
 # ==== Инициализация ====
@@ -86,7 +86,13 @@ def search_similar_chunks(query: str, top_k: int = 5):
 # ==== Генерация ответа через Ollama ====
 def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
     context = "\n\n".join(chunks)
-    prompt = f"Вот информация из отчёта:\n{context}\n\nВопрос: {question}\nОтвет:"
+    prompt = (
+        f"Вот информация из отчёта:\n{context}\n\n" 
+        f"Вопрос: {question}\n\n" 
+        "1) Проанализируй **текущий** отчёт: выведи ключевые выводы и метрики, дай подробную обратную связь и рекомендации по улучшению следующих прогонов.\n" 
+        "2) Затем сравни этот отчёт с двумя предыдущими отчётами команды и определи тренд: деградация, улучшение или стабильность.\n\n" 
+        "Ответ структурируй по пунктам 1 и 2." 
+    )
     
     try:
         response = requests.post(
@@ -131,7 +137,7 @@ def run_rag_analysis(team_name: str) -> dict:
         raise RagAnalysisError("Qdrant unreachable or returned an error") from e
     chunks = [p.payload.get("rag_text", "") for p in points]
 
-    question = "Кратко проанализируй результаты отчёта."
+    question = "Проанализируй текущий отчёт (выводы, обратная связь, рекомендации), а затем сравни с двумя предыдущими и укажи тренд."
     answer = generate_answer_with_ollama(chunks, question) if chunks else ""
     return {"team": team_name, "analysis": answer}
 
