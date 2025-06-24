@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 COLLECTION_NAME = "allure_chunks"
 # URL for the Ollama API can be overridden by environment variable
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
@@ -22,6 +23,10 @@ OLLAMA_MODEL = "qwen3:0.6b"
 # ==== Инициализация ====
 _MODEL = None
 _CLIENT = None
+
+
+class QdrantConnectionError(Exception):
+    """Raised when a connection to Qdrant cannot be established."""
 
 
 def get_model():
@@ -36,7 +41,13 @@ def get_client():
     """Return cached QdrantClient instance."""
     global _CLIENT
     if _CLIENT is None:
-        _CLIENT = QdrantClient(url=QDRANT_URL)
+        try:
+            _CLIENT = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+        except Exception as e:  # pragma: no cover - network errors hard to simulate
+            logger.error("Failed to connect to Qdrant at %s: %s", QDRANT_URL, e)
+            raise QdrantConnectionError(
+                f"Could not connect to Qdrant at {QDRANT_URL}"
+            ) from e
     return _CLIENT
 
 

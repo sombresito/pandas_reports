@@ -16,6 +16,8 @@ This project fetches test reports from an Allure API and runs RAG analysis on th
   by `embeddings.py` (default `embeddings`).
 - `MODEL_PATH` – location of the SentenceTransformer model used for embedding
   generation (default `local_models/intfloat/multilingual-e5-small`).
+- `QDRANT_URL` – base URL of the Qdrant service (default `http://localhost:6333`).
+- `QDRANT_API_KEY` – API key for connecting to Qdrant, if required.
 
 When authentication variables are provided, requests made by `main.py` and `utils.py` automatically attach the appropriate `Authorization` header or basic auth parameters.
 
@@ -27,3 +29,11 @@ is `INFO`. Set the `LOG_LEVEL` environment variable to control verbosity, e.g.
 ```bash
 LOG_LEVEL=DEBUG python embeddings.py
 ```
+
+## Troubleshooting
+
+If the application fails to connect to Qdrant, ensure that `QDRANT_URL` points to
+the running service. When Qdrant is secured with an API key, set
+`QDRANT_API_KEY` with the appropriate token. Connection errors from
+`rag_pipeline.get_client` will be logged before raising a
+`QdrantConnectionError`.
