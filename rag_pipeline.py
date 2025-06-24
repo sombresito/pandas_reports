@@ -7,7 +7,7 @@ import os
 
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
-QDRANT_URL = "http://localhost:6333"
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 COLLECTION_NAME = "allure_chunks"
 # URL for the Ollama API can be overridden by environment variable
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")

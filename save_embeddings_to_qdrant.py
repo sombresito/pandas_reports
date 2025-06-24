@@ -1,16 +1,21 @@
+import os
 import numpy as np
 import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, Match
 
 # Настройки
-QDRANT_URL = QdrantClient(host="localhost", port=6333)
+QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
+QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
+qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 COLLECTION_NAME = "allure_chunks"
 VECTOR_SIZE = 384
 
 # Загружаем данные
-df = pd.read_json("output_chunks.jsonl", lines=True)
-embeddings = np.load("embeddings.npy")
+CHUNKS_PATH = os.getenv("CHUNKS_PATH", "output_chunks.jsonl")
+EMBEDDINGS_PATH = os.getenv("EMBEDDINGS_PATH", "embeddings.npy")
+df = pd.read_json(CHUNKS_PATH, lines=True)
+embeddings = np.load(EMBEDDINGS_PATH)
 
 # Получаем название команды и UUID отчёта из первой строки
 first_row = df.iloc[0]
@@ -18,7 +23,7 @@ team = first_row["parentSuite"]
 report_uuid = first_row["report_uuid"]
 
 # Подключаемся к Qdrant
-client = QDRANT_URL
+client = qdrant_client
 
 # Создаём коллекцию, если не существует
 if not client.collection_exists(collection_name=COLLECTION_NAME):
