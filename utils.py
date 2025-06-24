@@ -92,7 +92,10 @@ def analyze_and_post(uuid, team_name):
         result = run_rag_analysis(team_name)
     except RagAnalysisError as e:
         logger.error("RAG analysis failed for %s: %s", uuid, e)
-        raise HTTPException(status_code=500, detail="Qdrant service is unreachable") from e
+        raise HTTPException(
+            status_code=500,
+            detail=f"Qdrant service is unreachable: {e}"
+        ) from e
 
     # Отправка анализа
     url = f"{ALLURE_API}/analysis/report/{uuid}"
