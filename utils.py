@@ -73,8 +73,13 @@ def analyze_and_post(uuid, team_name):
     url = f"http://allure-report-bcc-qa:8080/api/analysis/report/{uuid}"
     try:
         resp = requests.post(url, json=result, timeout=10)
-        resp.raise_for_status()
     except requests.RequestException as e:
         logger.error("Failed to post analysis for %s: %s", uuid, e)
         raise HTTPException(status_code=500, detail=f"Failed to post analysis: {e}") from e
+
+    # Check response status explicitly so analyze_report can handle errors
+    if not 200 <= resp.status_code < 300:
+        msg = f"Unexpected status {resp.status_code}: {resp.text}"
+        logger.error("Failed to post analysis for %s: %s", uuid, msg)
+        raise HTTPException(status_code=500, detail=msg)
 
