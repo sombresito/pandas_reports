@@ -24,7 +24,7 @@ services:
         --port 5000
 
   qdrant:
-    image: zhumakom/qdrant:latest
+    image: qdrant/qdrant:latest
     ports:
       - "6333:6333"
     volumes:
