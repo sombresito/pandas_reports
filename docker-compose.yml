@@ -6,6 +6,7 @@ services:
       args:
         HTTP_PROXY: ""
         HTTPS_PROXY: ""
+    image: zhumakom/pandas_reports-app:1.0.0
     ports:
       - "5000:5000"
     depends_on:
@@ -23,7 +24,7 @@ services:
         --port 5000
 
   qdrant:
-    image: qdrant/qdrant:latest
+    image: zhumakom/qdrant:latest
     ports:
       - "6333:6333"
     volumes:

@@ -4,7 +4,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 try:
     from qdrant_client.http.exceptions import UnexpectedResponse, QdrantConnectionError as QdrantClientConnectionError
-except Exception:  # pragma: no cover - package may not be installed during tests
+except Exception:
     class UnexpectedResponse(Exception):
         pass
 
@@ -21,8 +21,6 @@ logger = logging.getLogger(__name__)
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
 QDRANT_URL = os.getenv("QDRANT_URL", "http://host.docker.internal:6333")
-# No authentication is required when talking to Qdrant so we don't accept
-# an API key. Simply configure the base URL and timeout.
 QDRANT_TIMEOUT = int(os.getenv("QDRANT_TIMEOUT", "10"))
 COLLECTION_NAME = "allure_chunks"
 # URL for the Ollama API can be overridden by environment variable
@@ -98,7 +96,7 @@ def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
         response = requests.post(
             ollama_url,
             json={
-                "model": OLLAMA_MODEL,   # или другая твоя модель
+                "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": True
             },
