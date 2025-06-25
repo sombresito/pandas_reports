@@ -12,6 +12,7 @@ from qdrant_client.http.models import (
     Filter,
     FieldCondition,
     MatchValue,
+    PointIdsList,
 )
 
 from embeddings import load_chunks
@@ -75,7 +76,10 @@ def upload_embeddings(
         sorted_uuids = sorted(by_uuid.items(), key=lambda x: x[0])
         for old_uuid, old_points in sorted_uuids[:-2]:
             ids_to_delete = [p.id for p in old_points]
-            client.delete(collection_name=COLLECTION_NAME, points_selector={"points": ids_to_delete})
+            client.delete(
+                collection_name=COLLECTION_NAME,
+                points_selector=PointIdsList(points=ids_to_delete),
+            )
             logger.info("Removed old report: %s", old_uuid)
 
     points = [
