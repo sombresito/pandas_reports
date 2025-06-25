@@ -8,7 +8,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 # Базовый URL Allure API, по умолчанию взят из переменной окружения
-ALLURE_API = os.getenv("ALLURE_API", "http://allure-report-bcc-qa:8080/api")
+ALLURE_API = os.getenv("ALLURE_API", "http://10.15.132.171:8080/api")
 
 
 def _auth_kwargs():
