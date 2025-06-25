@@ -42,6 +42,7 @@ for name in [
     "Filter",
     "FieldCondition",
     "MatchValue",
+    "PointIdsList",
 ]:
     setattr(models_stub, name, object)
 sys.modules.setdefault("qdrant_client.http.models", models_stub)

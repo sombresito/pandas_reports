@@ -89,7 +89,7 @@ def analyze_and_post(uuid: str, team_name: str):
         logger.error("RAG analysis failed for %s: %s", uuid, e)
         raise HTTPException(
             status_code=500,
-            detail=f"RAG analysis error: {e}"
+            detail=f"Qdrant service is unreachable: {e}"
         ) from e
 
     # Формируем полезную нагрузку по спецификации
@@ -105,12 +105,16 @@ def analyze_and_post(uuid: str, team_name: str):
     auth_kwargs = _auth_kwargs()
     try:
         resp = requests.post(url, json=payload, timeout=10, **auth_kwargs)
-        resp.raise_for_status()
     except requests.RequestException as e:
         logger.error("Failed to post analysis for %s: %s", uuid, e)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to post analysis: {e}"
         ) from e
+
+    if not 200 <= resp.status_code < 300:
+        msg = f"Unexpected status {resp.status_code}: {resp.text}"
+        logger.error("Failed to post analysis for %s: %s", uuid, msg)
+        raise HTTPException(status_code=500, detail=msg)
 
     logger.info("Analysis posted successfully for %s", uuid)

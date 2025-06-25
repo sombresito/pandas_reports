@@ -55,6 +55,8 @@ sys.modules.setdefault('requests', types.ModuleType('requests'))
 
 rp = importlib.import_module("rag_pipeline")
 importlib.reload(rp)
+model_calls.clear()
+client_calls.clear()
 
 # replace the public name with a stub so later imports get a dummy module
 stub = types.ModuleType("rag_pipeline")
@@ -64,6 +66,8 @@ sys.modules["rag_pipeline"] = stub
 
 
 def test_lazy_model_and_client_creation():
+    model_calls.clear()
+    client_calls.clear()
     assert rp._MODEL is None
     assert rp._CLIENT is None
     assert model_calls == [] and client_calls == []
