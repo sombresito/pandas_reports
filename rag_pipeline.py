@@ -98,6 +98,7 @@ def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
             json={
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
+                "temperature": "0.3",
                 "stream": True
             },
             stream=True,
