@@ -45,5 +45,5 @@ RUN pip install --upgrade pip \
 COPY . .
 
 # 6) Экспонируем порт и запускаем
-EXPOSE 5005
+EXPOSE 5000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
