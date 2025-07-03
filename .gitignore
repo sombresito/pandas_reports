@@ -2,9 +2,7 @@ local_models/
 venv/
 reports/
 .env
-embeddings.npy
-output_chunks.jsonl
 __pycache__/
 chunks/
-embeddings/
 qdrant_storage/
+ollama/

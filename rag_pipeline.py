@@ -20,12 +20,18 @@ logger = logging.getLogger(__name__)
 
 # ==== Настройки ====
 MODEL_PATH = "local_models/intfloat/multilingual-e5-small"
-QDRANT_URL = os.getenv("QDRANT_URL", "http://host.docker.internal:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
 QDRANT_TIMEOUT = int(os.getenv("QDRANT_TIMEOUT", "10"))
 COLLECTION_NAME = "allure_chunks"
 # URL for the Ollama API can be overridden by environment variable
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://host.docker.internal:11434/api/generate")
-OLLAMA_MODEL = "mistral"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434/api/generate")
+OLLAMA_MODEL = "mistral:latest"
+
+# Default analysis prompt can be overridden via the /prompt API
+question = (
+    "Проанализируй текущий отчёт (выводы, обратная связь, рекомендации), "
+    "а затем сравни с двумя предыдущими и укажи тренд."
+)
 
 
 # ==== Инициализация ====
@@ -82,16 +88,24 @@ def search_similar_chunks(query: str, top_k: int = 5):
 
 
 # ==== Генерация ответа через Ollama ====
-def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
+def generate_answer_with_ollama(
+    chunks,
+    question,
+    ollama_url: str = OLLAMA_URL,
+    prompt_override: str | None = None,
+):
     context = "\n\n".join(chunks)
-    prompt = (
-        f"Вот информация из отчёта:\n{context}\n\n" 
-        f"Вопрос: {question}\n\n" 
-        "1) Проанализируй **текущий** отчёт: выведи ключевые выводы и метрики, дай подробную обратную связь и рекомендации по улучшению следующих прогонов.\n" 
-        "2) Затем сравни этот отчёт с двумя предыдущими отчётами команды и определи тренд: деградация, улучшение или стабильность.\n\n" 
-        "Ответ структурируй по пунктам 1. Анализ текущего очтета: и 2. Сравнение с двумя предыдущими отчётами:, но не пиши цифры, названия пунктов сделай жирным, а текст — обычным." 
-    )
-    
+    if prompt_override is not None:
+        prompt = f"Вот информация из отчёта:\n{context}\n\n{prompt_override}"
+    else:
+        prompt = (
+            f"Вот информация из отчёта:\n{context}\n\n"
+            f"Вопрос: {question}\n\n"
+            "1) Проанализируй **текущий** отчёт: выведи ключевые выводы и метрики, дай подробную обратную связь и рекомендации по улучшению следующих прогонов.\n"
+            "2) Затем сравни этот отчёт с двумя предыдущими отчётами команды и определи тренд: деградация, улучшение или стабильность.\n\n"
+            "Ответ структурируй по пунктам 1. Анализ текущего очтета: и 2. Сравнение с двумя предыдущими отчётами:, но не пиши цифры, названия пунктов сделай жирным, а текст — обычным."
+        )
+    logger.info("Промпт который получает ИИ: %s", prompt)
     try:
         response = requests.post(
             ollama_url,
@@ -118,11 +132,24 @@ def generate_answer_with_ollama(chunks, question, ollama_url: str = OLLAMA_URL):
     return answer.strip()
 
 
-def run_rag_analysis(team_name: str) -> dict:
-    """Generate a short analysis for a team's latest report using RAG."""
+def run_rag_analysis(
+    test_suite_name: str,
+    question_override: str | None = None,
+    prompt_override: str | None = None,
+) -> dict:
+    """Generate a short analysis for a team's latest report using RAG.
+
+    Parameters
+    ----------
+    test_suite_name: str
+        Team name used as filter when fetching chunks from Qdrant.
+    question_override: str | None, optional
+        Prompt to use instead of the default :data:`question`.  When ``None``
+        the globally configured prompt is used.
+    """
     client = get_client()
     search_filter = Filter(
-        must=[FieldCondition(key="team", match=MatchValue(value=team_name))]
+        must=[FieldCondition(key="team", match=MatchValue(value=test_suite_name))]
     )
     try:
         points, _ = client.scroll(
@@ -136,9 +163,14 @@ def run_rag_analysis(team_name: str) -> dict:
         raise RagAnalysisError("Qdrant unreachable or returned an error") from e
     chunks = [p.payload.get("rag_text", "") for p in points]
 
-    question = "Проанализируй текущий отчёт (выводы, обратная связь, рекомендации), а затем сравни с двумя предыдущими и укажи тренд."
-    answer = generate_answer_with_ollama(chunks, question) if chunks else ""
-    return {"team": team_name, "analysis": answer}
+    q = question_override or question
+    logger.info("Овверайд промпта: %s", q)
+    answer = (
+        generate_answer_with_ollama(chunks, q, prompt_override=prompt_override)
+        if chunks
+        else ""
+    )
+    return {"team": test_suite_name, "analysis": answer}
 
 
 # ==== Основная функция ====

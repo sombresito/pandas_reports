@@ -3,32 +3,47 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        HTTP_PROXY: ""
-        HTTPS_PROXY: ""
-    image: zhumakom/pandas_reports-app:1.0.0
+    image: zhumakom/allure_analyzer:latest
     ports:
       - "5000:5000"
+    volumes:
+      - ./chunks:/app/chunks
+      - ./embeddings:/app/embeddings
+      - pip_cache:/root/.cache/pip
     depends_on:
       - qdrant
+      - ollama
     environment:
-      - ALLURE_API=http://10.15.132.171:8080/api
       - QDRANT_URL=http://qdrant:6333
-      - ALLURE_USER=hulk
-      - ALLURE_PASS=hulkQA
-    volumes:
-      - ./:/app
-    command: >
-      uvicorn main:app
-        --host 0.0.0.0
-        --port 5000
+      - OLLAMA_URL=http://ollama:11434/api/generate
+    networks:
+      - allure_analyzer_network
+    restart: unless-stopped
 
   qdrant:
     image: qdrant/qdrant:latest
     ports:
       - "6333:6333"
     volumes:
-      - qdrant_storage:/qdrant/storage
+      - ./qdrant_storage:/qdrant/storage
+    networks:
+      - allure_analyzer_network
+    restart: unless-stopped
+
+  ollama:
+    image: zhumakom/ollama-mistral
+    command: ["serve"]
+    environment:
+      - OLLAMA_HOST=http://0.0.0.0:11434
+    ports:
+      - "11436:11434"
+    networks:
+      - allure_analyzer_network
+    restart: unless-stopped
+
+networks:
+  allure_analyzer_network:
+    name: allure_analyzer_network
 
 volumes:
-  qdrant_storage:
+  pip_cache:

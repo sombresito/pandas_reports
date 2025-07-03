@@ -35,7 +35,10 @@ def chunk_json_to_jsonl(data, output_path: str, report_uuid: str) -> pd.DataFram
             "name": t.get("name"),
             "parentSuite": next(
                 (l["value"] for l in t.get("labels", []) if l.get("name") == "parentSuite"),
-                "unknown",
+                next(
+                    (l["value"] for l in t.get("labels", []) if l.get("name") == "suite"),
+                    "unknown",
+                ),
             ),
             "suite": next(
                 (l["value"] for l in t.get("labels", []) if l.get("name") == "suite"),
@@ -67,7 +70,7 @@ def chunk_json_to_jsonl(data, output_path: str, report_uuid: str) -> pd.DataFram
     df["rag_text"] = df.apply(
         lambda row: (
             f"Название теста: {row['name']}\n"
-            f"Команда: {row['parentSuite']}\n"
+            f"Комплект Авто Тестов: {row['parentSuite']}\n"
             f"Модуль: {row['suite']}\n"
             f"Владелец: {row['owner']}\n"
             f"Серьёзность: {row['severity']}\n"
