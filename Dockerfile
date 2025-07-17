@@ -29,6 +29,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
+ # 3.1) Папка для SSL-сертификатов
+RUN mkdir -p /certs
+
+# 3.2) Копируем заранее сгенерированные сертификат и ключ
+COPY dev-cert.pem /certs/cert.pem
+COPY dev-key.pem  /certs/key.pem
+
 WORKDIR /app
 
 # 4) Копируем requirements и ставим зависимости с доверенными хостами
@@ -46,4 +53,7 @@ COPY . .
 
 # 6) Экспонируем порт и запускаем
 EXPOSE 5000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "main:app", \
+     "--host", "0.0.0.0", "--port", "5000", \
+     "--ssl-certfile", "/certs/cert.pem", \
+     "--ssl-keyfile",  "/certs/key.pem"]
